@@ -276,9 +276,9 @@ class NefProxy(object):
         self.password = conf['password']
         self.host = conf['host']
         self.port = conf['port']
-        self.backoff_factor = 1
-        self.retries = 5
-        self.timeout = (30, 300)
+        self.backoff_factor = conf['backoff_factor']
+        self.retries = conf['retries']
+        self.timeout = conf['timeout']
         self.session = requests.Session()
         self.session.verify = conf['validate_certs']
         self.session.headers.update(self.headers)
@@ -415,7 +415,7 @@ def main():
         'validate_certs': validate_certs,
         'backoff_factor': backoff_factor,
         'retries': retries,
-        'timeout': [connect_timeout, read_timeout]
+        'timeout': (connect_timeout, read_timeout)
     }
 
     nef = NefProxy(module, conf)

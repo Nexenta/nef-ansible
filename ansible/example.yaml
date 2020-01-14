@@ -1,0 +1,177 @@
+---
+- name: Example
+  gather_facts: false
+  hosts: localhost
+  vars_files:
+    - global.yaml
+
+  tasks:
+  - name: Activate License
+    nef:
+      user: "{{ nef_user }}"
+      password: "{{ nef_password }}"
+      host: "{{ nef_host }}"
+      method: "put"
+      path: "settings/license"
+      payload:
+        value: "{{ nef_license }}"
+
+  - name: Check License
+    nef:
+      user: "{{ nef_user }}"
+      password: "{{ nef_password }}"
+      host: "{{ nef_host }}"
+      method: "get"
+      path: "settings/license"
+    register: result
+
+  - name: Display License
+    debug:
+      var:
+        result
+
+  - name: List Unused Disks
+    nef:
+      user: "{{ nef_user }}"
+      password: "{{ nef_password }}"
+      host: "{{ nef_host }}"
+      method: get
+      path: inventory/disks
+      payload:
+        unused: True
+        fields: logicalDevice
+    register: result
+
+  - name: Display Unused Disks
+    debug:
+      var:
+        result
+
+  - name: Create FileSystem
+    nef:
+      user: "{{ nef_user }}"
+      password: "{{ nef_password }}"
+      host: "{{ nef_host }}"
+      method: post
+      path: storage/filesystems
+      payload:
+        path: tank/nas
+        quotaSize: 107374182400
+        rateLimit: 1073741824
+
+  - name: Get FileSystem Properties
+    nef:
+      user: "{{ nef_user }}"
+      password: "{{ nef_password }}"
+      host: "{{ nef_host }}"
+      method: get
+      path: "{{ 'storage/filesystems/' + 'tank/nas' | nefencode }}"
+    register: result
+
+  - name: Display FileSystem Properties
+    debug:
+      var:
+        result
+
+  - name: Create NFS Share
+    nef:
+      user: "{{ nef_user }}"
+      password: "{{ nef_password }}"
+      host: "{{ nef_host }}"
+      method: post
+      path: nas/nfs
+      payload:
+        filesystem: tank/nas
+        anon: root
+
+  - name: Get NFS Share Properties
+    nef:
+      user: "{{ nef_user }}"
+      password: "{{ nef_password }}"
+      host: "{{ nef_host }}"
+      method: get
+      path: "{{ 'nas/nfs/' + 'tank/nas' | nefencode }}"
+    register: result
+
+  - name: Display NFS Share Properties
+    debug:
+      var:
+        result
+
+  - name: Create SMB Share
+    nef:
+      user: "{{ nef_user }}"
+      password: "{{ nef_password }}"
+      host: "{{ nef_host }}"
+      method: post
+      path: nas/smb
+      payload:
+        filesystem: tank/nas
+        guestOk: True
+
+  - name: Get SMB Share Properties
+    nef:
+      user: "{{ nef_user }}"
+      password: "{{ nef_password }}"
+      host: "{{ nef_host }}"
+      method: get
+      path: "{{ 'nas/smb/' + 'tank/nas' | nefencode }}"
+    register: result
+
+  - name: Display SMB Share Properties
+    debug:
+      var:
+        result
+
+  - name: Create Replication Service
+    nef:
+      user: "{{ nef_user }}"
+      password: "{{ nef_password }}"
+      host: "{{ nef_host }}"
+      method: post
+      path: hpr/services
+      payload:
+        name: nas-service
+        sourceDataset: tank/nas
+        destinationDataset: tank/nas-dst
+        type: scheduled
+        sendShareNfs: True
+        recursive: True
+        isSource: True
+        remoteNode:
+          host: host2
+        transportOptions:
+          throttle: 209715200
+        zfsOptions:
+          replaceProperties:
+            readOnly: True
+          ignoreProperties:
+            - mountPoint
+        schedules:
+          - scheduleName: hourly
+            cron: 0 * * * *
+            keepSource: 24
+            keepDestination: 168
+
+  - name: Enable Replication Service Properties
+    nef:
+      user: "{{ nef_user }}"
+      password: "{{ nef_password }}"
+      host: "{{ nef_host }}"
+      method: post
+      path: hpr/services/nas-service/enable
+
+  - name: Get Replication Service Properties
+    nef:
+      user: "{{ nef_user }}"
+      password: "{{ nef_password }}"
+      host: "{{ nef_host }}"
+      method: get
+      path: hpr/services/nas-service
+    register: result
+
+  - name: Display Replication Service Properties
+    debug:
+      var:
+        result
+...

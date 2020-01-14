@@ -1,0 +1,6 @@
+---
+nef_host: 10.1.1.10
+nef_user: admin
+nef_password: nexenta
+nef_license: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+...

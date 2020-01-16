@@ -343,8 +343,7 @@ def main():
         },
         'password': {
             'required': True,
-            'type': 'str',
-            'no_log': True
+            'type': 'str'
         },
         'host': {
             'required': True,

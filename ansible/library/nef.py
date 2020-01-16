@@ -14,6 +14,7 @@
 
 import gettext
 import json
+import posixpath
 import time
 import requests
 import six
@@ -111,6 +112,11 @@ class NefRequest(object):
                       'stat': self.stat,
                       'content': response.content})
             if response.ok and not response.content:
+                if 'location' in response.headers:
+                    location = response.headers['location']
+                    name = posixpath.basename(location)
+                    data = six.moves.urllib.parse.unquote_plus(name)
+                    return data
                 return None
             content = json.loads(response.content)
             if not response.ok:

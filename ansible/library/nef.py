@@ -343,6 +343,7 @@ def main():
         },
         'password': {
             'required': True,
+            'no_log': True,
             'type': 'str'
         },
         'host': {

@@ -1,6 +1,7 @@
 ---
-- name: Example
+- name: NexentaStor5 API Examples
   gather_facts: false
+  connection: local
   hosts: localhost
   vars_files:
     - global.yaml
@@ -39,6 +40,7 @@
       path: inventory/disks
       payload:
         unused: True
+        state: ONLINE
         fields: logicalDevice
     register: result
 
@@ -46,6 +48,23 @@
     debug:
       var:
         result
+
+  - name : Set Disks List
+    set_fact:
+      disks: "{{ disks | default([]) + [item.logicalDevice] }}"
+    with_items: "{{ result.data }}"
+
+  - name: Create Pool
+    nef:
+      user: "{{ nef_user }}"
+      password: "{{ nef_password }}"
+      host: "{{ nef_host }}"
+      method: post
+      path: storage/pools
+      payload:
+        force: True
+        poolName: tank
+        dataDevices: "{{ disks }}"
 
   - name: Create FileSystem
     nef:

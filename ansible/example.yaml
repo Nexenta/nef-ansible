@@ -12,8 +12,8 @@
       user: "{{ nef_user }}"
       password: "{{ nef_password }}"
       host: "{{ nef_host }}"
-      method: "put"
-      path: "settings/license"
+      method: put
+      path: settings/license
       payload:
         value: "{{ nef_license }}"
 
@@ -22,8 +22,8 @@
       user: "{{ nef_user }}"
       password: "{{ nef_password }}"
       host: "{{ nef_host }}"
-      method: "get"
-      path: "settings/license"
+      method: get
+      path: settings/license
     register: result
 
   - name: Display License
